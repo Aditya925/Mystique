@@ -7,10 +7,8 @@ use futures::{Future, Stream};
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
-
 use config::Config;
 use files::secure_join;
-
 fn save_file(
     field: multipart::Field<actix_web::dev::Payload>,
     config: &Config,
@@ -23,10 +21,8 @@ fn save_file(
             )))
         }
     };
-
     let mut raw_file_name: Vec<u8> = Vec::new();
     let mut file_path = String::new();
-
     for i in &raw {
         match i {
             Filename(_, _, a) => raw_file_name = a.to_vec(),
@@ -37,19 +33,13 @@ fn save_file(
             }
         }
     }
-
     if raw_file_name.is_empty() {
-        return Box::new(future::err(error::ErrorInternalServerError(
-            "no valid file",
-        )));
+        return Box::new(future::err(error::ErrorInternalServerError("no valid file",)));
     }
-
     let file_name = PathBuf::from(match String::from_utf8(raw_file_name.clone()) {
         Ok(n) => n,
         Err(e) => return Box::new(future::err(error::ErrorInternalServerError(e))),
     });
-
-    // Check if the filename is just a filename without a path
     let pure_file_name = match file_name.file_name() {
         Some(name) => name,
         None => return Box::new(future::err(error::ErrorInternalServerError(""))),
@@ -57,19 +47,15 @@ fn save_file(
     if pure_file_name != file_name {
         return Box::new(future::err(error::ErrorInternalServerError("")));
     }
-
     println!("Upload: \"{}{}\"", file_path, file_name.display());
-
     let absolute_path = match secure_join(config.path.clone(), file_path) {
         Ok(path) => path.join(file_name.clone()),
         Err(e) => return Box::new(future::err(error::ErrorInternalServerError(e))),
     };
-
     let mut file = match fs::File::create(absolute_path) {
         Ok(file) => file,
         Err(e) => return Box::new(future::err(error::ErrorInternalServerError(e))),
     };
-
     Box::new(
         field
             .fold(0i64, move |acc, bytes| {
@@ -81,13 +67,9 @@ fn save_file(
                         error::MultipartError::Payload(error::PayloadError::Io(e))
                     });
                 future::result(rt)
-            }).map_err(|e| {
-                println!("save_file failed, {:?}", e);
-                error::ErrorInternalServerError(e)
-            }),
+            }).map_err(|e| {println!("save_file failed, {:?}", e);error::ErrorInternalServerError(e)}),
     )
 }
-
 pub fn handle_multipart_item(
     item: multipart::MultipartItem<actix_web::dev::Payload>,
     config: &Config,

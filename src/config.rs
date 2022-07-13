@@ -4,7 +4,6 @@ use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs};
 use std::path::PathBuf;
 use std::time::SystemTime;
 
-/// Thumbcloud Configuration
 #[derive(Clone)]
 pub struct Config {
     pub addr: SocketAddr,
@@ -17,16 +16,13 @@ pub struct Config {
 }
 
 impl Config {
-    /// Create a Config object from the matches from clap.
     fn from_matches(matches: &ArgMatches) -> Config {
         let crate_name: String = {
-            // Capitalize the first character of the crate name
             let s1 = env!("CARGO_PKG_NAME");
             let mut v: Vec<char> = s1.chars().collect();
             v[0] = v[0].to_uppercase().nth(0).unwrap();
             v.into_iter().collect()
         };
-
         Config {
             path: PathBuf::from(matches.value_of("INPUT").unwrap())
                 .canonicalize()
@@ -44,10 +40,7 @@ impl Config {
     }
 }
 
-/// This function returns an Address.
-/// If the input_address is valid it will be returned as if.
-/// If the computer is on a network it local IP will be returned with the Port 8080.
-/// Else the address 127.0.0.1:8080 will be returned.
+
 fn get_address(input_address: Option<&str>) -> SocketAddr {
     // Return input address if it is a valid socket
     if let Some(input_address) = input_address {
@@ -64,8 +57,6 @@ fn get_address(input_address: Option<&str>) -> SocketAddr {
         8080,
     )
 }
-
-/// Replaces the app_name with the crate_name if the app_name is invalid.
 fn correct_invalid_name<'a>(app_name: &'a str, crate_name: &'a str) -> &'a str {
     if app_name.trim().is_empty() {
         //Entered invalid name, reverting back to default cratename
@@ -74,12 +65,6 @@ fn correct_invalid_name<'a>(app_name: &'a str, crate_name: &'a str) -> &'a str {
         app_name
     }
 }
-
-/// Checks if the input path is valid
-///
-/// # Errors
-/// * The path does not exist
-/// * The path points to a file
 #[cfg_attr(feature = "cargo-clippy", allow(needless_pass_by_value))] //because clap allways passes a String
 fn is_valid_path(input: String) -> Result<(), String> {
     let path = PathBuf::from(&input);

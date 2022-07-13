@@ -1,6 +1,5 @@
 use serde_json;
 use serde_json::Value;
-
 use config::Config;
 use files;
 use system;

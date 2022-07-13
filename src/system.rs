@@ -1,5 +1,4 @@
 use std::time::SystemTime;
-
 pub fn get_os<'a>() -> &'a str {
     if cfg!(target_os = "windows") {
         "Windows"
@@ -25,7 +24,6 @@ pub fn get_os<'a>() -> &'a str {
         "Unknown"
     }
 }
-
 pub fn get_uptime_respond(start_time: &SystemTime) -> String {
     match start_time.elapsed() {
         Ok(e) => json!({

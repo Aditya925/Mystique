@@ -3,11 +3,10 @@ use actix_web::*;
 use actix_web::{dev::Handler, error::Error, fs::StaticFiles, http::header::*, http::Method};
 use askama::Template;
 use futures::{Future, Stream};
-use open;
 use std::io;
 use std::net::SocketAddr;
 use std::path::Path;
-
+use open;
 use config;
 use config::Config;
 use decoder;
@@ -60,8 +59,6 @@ fn upload(req: &HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
             }),
     )
 }
-
-/// askama template for the about page
 #[derive(Template)]
 #[template(path = "about.html")]
 struct AboutTemplate<'a> {
@@ -74,10 +71,6 @@ struct AboutTemplate<'a> {
     repository: &'a str,
     repository_name: &'a str,
 }
-
-// TODO: This code shouldn't be that hardcoded. The right way would be to load
-// and parse the Cargo.toml file at compile-time.
-/// actix-web route for the about page
 fn about(req: &HttpRequest<AppState>) -> Result<HttpResponse> {
     println!("Visit about");
 
@@ -105,8 +98,6 @@ fn about(req: &HttpRequest<AppState>) -> Result<HttpResponse> {
     .unwrap();
     Ok(HttpResponse::Ok().content_type("text/html").body(content))
 }
-
-/// askama template for the system page
 #[derive(Template)]
 #[template(path = "system.html")]
 struct SystemTemplate<'a> {
@@ -115,8 +106,6 @@ struct SystemTemplate<'a> {
     addr: &'a SocketAddr,
     os: &'a str,
 }
-
-/// actix-web route for the system page
 fn system(req: &HttpRequest<AppState>) -> Result<HttpResponse> {
     println!("Visit system");
 
@@ -137,8 +126,6 @@ struct DefaultTemplate<'a> {
     app_name: &'a str,
     page: &'a str,
 }
-
-/// actix-web route for the 404 page
 fn default(req: &HttpRequest<AppState>) -> Result<HttpResponse> {
     println!("Visit Page not found");
 
@@ -149,48 +136,36 @@ fn default(req: &HttpRequest<AppState>) -> Result<HttpResponse> {
     .unwrap();
     Ok(HttpResponse::Ok().content_type("text/html").body(content))
 }
-
-/// actix-web route for the websocket messages
 fn ws_route(req: &HttpRequest<AppState>) -> Result<HttpResponse, Error> {
     let config = req.state().config.clone();
     ws::start(&req, WsSession { config })
 }
 
-/// Prints information if the static folder is missing.
 fn print_static_missing() {
     println!(
         "
 STATIC FOLDER MISSING
--------------------------------------------------------------------
-Thumbcloud needs to be started in the same directory as the 
-`static` folder. This is because Thumbcloud loads some files from 
+Mystique needs to be started in the same directory as the 
+`static` folder. This is because Mystique loads some files from 
 that directory. 
--------------------------------------------------------------------
-"
-    )
+")
 }
 
-/// Print the bind error with helpful information
 fn print_bind_error(err: &io::Error, addr: &SocketAddr) {
     println!(
         "\n
 BIND ERROR: \"{}\" 
---------------------------------------------------------------------
 Can not bind server to: {}
 Possible reasons for this error are:
 1. The given IP address is invalid or does not belong to your 
 computer
 2. The given Port number is already used by another programm
-3. The IP and Port number are valid however, your OS needs root 
-permission to use it, in which case `sudo thumbcloud` should work
---------------------------------------------------------------------
+
 \n",
         err.get_ref().unwrap_or(err),
         addr
     )
 }
-
-/// The state of the websocket communication
 struct WsSession {
     config: Config,
 }
@@ -207,20 +182,12 @@ impl StreamHandler<ws::Message, ws::ProtocolError> for WsSession {
         }
     }
 }
-
-/// Starts the server
 pub fn run(config: &Config) {
-    // Check if the static folder is available
     let static_folder = "./static/";
     if !Path::new(static_folder).exists() {
         print_static_missing();
         return;
     }
-
-    // NOTE: config2 and config3 are exact copies of the config struct passed to this function.
-    // I know that this code looks more that unusual, and is just a copy-hell, but it was the only
-    // way I could come up with to parse the commandline arguments just once.
-    // Feel free to improve this code.
     let config2 = config.clone();
     let server = match server::new(move || {
         let config3 = config2.clone();
