@@ -49,8 +49,6 @@ pub fn update_file(path: Path<(String,)>, body: Payload) -> impl Future<Item = H
 
 pub fn delete_file(path: Path<(String,)>) -> Result<impl Responder> {
   let path = path.0.as_str();
-  
   file_system::delete_file(PathBuf::from_str(path).unwrap())?;
-
   Ok(HttpResponse::Ok())
 }
