@@ -1,2 +1,2 @@
 # Mystique
-A file sharing server built using rust programming language
+A file transfer server built using rust programming language
