@@ -1,0 +1,11 @@
+Completed:-
+  - The Rust programming book.
+  - Zero to Prod book.
+  - Actix-web docs.
+
+Projects:-
+  - Implemented calculator and image combiner project in rust.
+  - Implemented a basic Todo-list CLI.
+  - Built a file sharing webserver using Actix-web as final project.
+
+- Currently working on Error handling part on backend for rapid screenshot monitoring tool.
