@@ -1,39 +1,24 @@
-use actix_web::{web, App, HttpServer};
-mod controller;
-mod service;
-pub struct ServiceContainer {
-    user: service::UserService,
-}
+use actix_web::{App, HttpServer, web};
 
-impl ServiceContainer {
-    pub fn new(user: service::UserService) -> Self {
-        ServiceContainer { user }
-    }
-}
+mod error;
+mod handler;
+mod utils;
 
-pub struct AppState {
-    service_container: ServiceContainer,
-}
+fn main() -> std::io::Result<()> {
+    let address = "127.0.0.1:7878";
+    println!("Listening at address http://{}", address);
 
-#[actix_rt::main]
-async fn main() -> std::io::Result<()> {
-    let client_options =
-        mongodb::options::ClientOptions::parse("mongodb://localhost:27017").unwrap();
-    let client = mongodb::sync::Client::with_options(client_options).unwrap();
-    let db = client.database("mydb");
-
-    let user_collection = db.collection("users");
-
-    HttpServer::new(move || {
-        let service_container =
-            ServiceContainer::new(service::UserService::new(user_collection.clone()));
-
+    HttpServer::new(|| {
         App::new()
-            .data(AppState { service_container })
-            .route("/hello", web::get().to(controller::index))
-            .route("/get", web::get().to(controller::get))
+            .service(
+                web::resource("/{filename}")
+                    .route(web::get().to(handler::read_file))
+                    .route(web::post().to_async(handler::create_file))
+                    .route(web::put().to_async(handler::update_file))
+                    .route(web::delete().to(handler::delete_file))
+            )
+            .default_service(web::route().to(handler::not_found))
     })
-    .bind("0.0.0.0:3000")?
+    .bind(address)?
     .run()
-    .await
 }
